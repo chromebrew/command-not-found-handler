@@ -113,6 +113,7 @@ int compare_name(const char *path, const struct stat *info, int flag, struct FTW
               if (total_exact_matches < RESULT_MAX) {
                 strncpy(exact_matches[total_exact_matches++], pkgName, RESULT_MAXLEN);
               }
+              fclose(fp);
               return 0;
             } else if (total_exact_matches == 0 && get_similarity(cmdName, cmd_to_search) > 0.7) {
               // command with similar name found
@@ -125,6 +126,7 @@ int compare_name(const char *path, const struct stat *info, int flag, struct FTW
           }
         }
       }
+      fclose(fp);
     break;
     case FTW_NS:
       // error
