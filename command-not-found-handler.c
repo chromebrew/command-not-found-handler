@@ -32,7 +32,10 @@
 #include <libgen.h>
 #include <linux/limits.h>
 
-const char *cmd_search_path[2] = {
+#define RESULT_MAX 20
+#define RESULT_MAXLEN 256
+
+const char *cmd_search_path[] = {
   "/usr/local/bin",
   "/usr/local/sbin"
 };
@@ -40,7 +43,7 @@ const char *cmd_search_path[2] = {
 int total_fuzzy_matches = 0,
     total_exact_matches = 0;
 
-char fuzzy_matches[10][100], exact_matches[5][30];
+char fuzzy_matches[RESULT_MAX][RESULT_MAXLEN], exact_matches[RESULT_MAX][RESULT_MAXLEN];
 char *filelist_path, *cmd_to_search;
 
 float get_similarity(const char *str1, const char *str2) {
@@ -107,10 +110,15 @@ int compare_name(const char *path, const struct stat *info, int flag, struct FTW
 
             if (strcmp(cmdName, cmd_to_search) == 0) {
               // command with exact name found
-              strncpy(exact_matches[total_exact_matches++], pkgName, 30);
-            } else if (get_similarity(cmdName, cmd_to_search) > 0.7) {
+              if (total_exact_matches < RESULT_MAX) {
+                strncpy(exact_matches[total_exact_matches++], pkgName, RESULT_MAXLEN);
+              }
+              return 0;
+            } else if (total_exact_matches == 0 && get_similarity(cmdName, cmd_to_search) > 0.7) {
               // command with similar name found
-              snprintf(fuzzy_matches[total_fuzzy_matches++], 100, "Command '%s' from package %s", cmdName, pkgName);
+              if (total_fuzzy_matches < RESULT_MAX) {
+                snprintf(fuzzy_matches[total_fuzzy_matches++], RESULT_MAXLEN, "Command '%s' from package %s", cmdName, pkgName);
+              }
             }
 
             break;
